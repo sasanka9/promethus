@@ -1,0 +1,55 @@
+CLUSTER AND NODE SETUP
+
+eksctl create cluster --name=prom \
+                      --region=us-east-1 \
+                      --zones=us-east-1a,us-east-1b \
+                      --without-nodegroup
+
+
+eksctl utils associate-iam-oidc-provider \
+    --region us-east-1 \
+    --cluster prom \
+    --approve
+
+eksctl create nodegroup --cluster=prom \
+                        --region=us-east-1 \
+                        --name=prom-ng-private \
+                        --node-type=t3.medium \
+                        --nodes-min=2 \
+                        --nodes-max=3 \
+                        --node-volume-size=20 \
+                        --managed \
+                        --asg-access \
+                        --external-dns-access \
+                        --full-ecr-access \
+                        --appmesh-access \
+                        --alb-ingress-access \
+                        --node-private-networking
+
+# Update ./kube/config file
+aws eks update-kubeconfig --name prom
+
+
+
+
+Install kube-prometheus-stack
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+
+SET UP NAMESPACE
+
+kubectl create ns prommonitoring
+
+helm install monitoring prometheus-community/kube-prometheus-stack \
+-n monitoring \
+-f ./custom_kube_prometheus_stack.yml
+
+CHECK and verify installation
+
+kubectl get all -n prommonitoring
+
+
+ACCESS Promethus UI
+kubectl port-forward service/prometheus-operated -n monitoring 9090:9090
