@@ -1,3 +1,12 @@
+EKSCTL setup
+curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz"
+tar -xzf eksctl_$(uname -s)_amd64.tar.gz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+
+
+
+
+
 CLUSTER AND NODE SETUP
 
 eksctl create cluster --name=prom \
